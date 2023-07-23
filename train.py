@@ -74,7 +74,7 @@ if __name__ == '__main__':
         # folder dataset
         dataset = dset.ImageFolder(root=opt.dataroot,
                                    transform=transforms.Compose([
-                                       transforms.Scale(opt.imageSize),
+                                       transforms.Resize(opt.imageSize),
                                        transforms.CenterCrop(opt.imageSize),
                                        transforms.ToTensor(),
                                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     elif opt.dataset == 'lsun':
         dataset = dset.LSUN(db_path=opt.dataroot, classes=['bedroom_train'],
                             transform=transforms.Compose([
-                                transforms.Scale(opt.imageSize),
+                                transforms.Resize(opt.imageSize),
                                 transforms.CenterCrop(opt.imageSize),
                                 transforms.ToTensor(),
                                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -90,13 +90,13 @@ if __name__ == '__main__':
     elif opt.dataset == 'cifar10':
         dataset = dset.CIFAR10(root=opt.dataroot, download=True,
                                transform=transforms.Compose([
-                                   transforms.Scale(opt.imageSize),
+                                   transforms.Resize(opt.imageSize),
                                    transforms.ToTensor(),
                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                                ])
         )
     elif opt.dataset == 'streetview':
-        transform = transforms.Compose([transforms.Scale(opt.imageSize),
+        transform = transforms.Compose([transforms.Resize(opt.imageSize),
                                         transforms.CenterCrop(opt.imageSize),
                                         transforms.ToTensor(),
                                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -178,9 +178,10 @@ if __name__ == '__main__':
             real_cpu, _ = data
             real_center_cpu = real_cpu[:,:,int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2),int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2)]
             batch_size = real_cpu.size(0)
-            input_real.data.resize_(real_cpu.size()).copy_(real_cpu)
-            input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
-            real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
+            with torch.no_grad():
+                input_real.resize_(real_cpu.size()).copy_(real_cpu)
+                input_cropped.resize_(real_cpu.size()).copy_(real_cpu)
+                real_center.resize_(real_center_cpu.size()).copy_(real_center_cpu)
             input_cropped.data[:,0,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*117.0/255.0 - 1.0
             input_cropped.data[:,1,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*104.0/255.0 - 1.0
             input_cropped.data[:,2,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*123.0/255.0 - 1.0
